@@ -61,9 +61,8 @@ def feasible_ints(base: int, maxdigs: int, sumdigs: int) -> Iterable[FNode]:
     yield GE(sum_mult, Int(0))
     yield Equals(Plus(*digits), Times(Int(sumdigs), sum_mult))
     for modulus in mymoduli:
-        digit_mults = (Times(Int((base ** _) % modulus), digits[_])
-            for _ in range(maxdigs + 1))
-        reduced_sum = Plus(*digit_mults)
+        reduced_sum = Plus(*(Times(Int((base ** ind) % modulus), val)
+            for ind, val in enumerate(digits)))
         mod_var = Symbol('s_%d' % modulus, INT)
         quo_var = Symbol('q_%d' % modulus, INT)
         yield GE(mod_var, Int(0))
@@ -73,7 +72,7 @@ def feasible_ints(base: int, maxdigs: int, sumdigs: int) -> Iterable[FNode]:
         mod_squares = {(_ **2) % modulus for _ in range(modulus)}
         non_squares = set(range(modulus)).difference(mod_squares)
         yield from (NotEquals(mod_var, Int(_)) for _ in non_squares)
-        yield Or(*(Equals(mod_var, Int(_)) for _ in mod_squares))
+        # yield Or(*(Equals(mod_var, Int(_)) for _ in mod_squares))
 
 def primary_filter(base: int, maxdigs: int, sumdigs: int) -> Iterable[int]:
     """
