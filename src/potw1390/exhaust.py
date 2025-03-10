@@ -3,25 +3,37 @@
 """
 from typing import Iterable
 from math import sqrt, log, exp, floor
+from itertools import islice
 
 def sum_digits(arg: int) -> int:
 
     return sum(map(int, str(arg)))
 
+def squares() -> Iterable[int]:
+
+    val = 1
+    elt = 0
+    while True:
+        yield val
+        elt += 1
+        val += 2 * elt + 1
+
 def exhaust_digits(base: int, maxdigs: int, divisor: int,
                    trace: int = 0) -> Iterable[int]:
     found = False
     cnt = 0
-    val = 1
-    for elt in range(1, floor(exp(0.5 * log(base) * maxdigs))):
+    top = floor(0.5 + exp(0.5 * log(base) * maxdigs))
+    print(f"top = {top}")
+    for elt, val in islice(enumerate(squares(),start=1), top + 1):
         if trace > 0 and (elt % trace) == 0:
-            print(f"At {val}, count = {cnt}")
-        if sum_digits(val) % divisor == 0:
+            print(f"At {elt}, count = {cnt}")
+        if (sum_digits(val) % divisor) == 0:
             cnt += 1
             if found:
-                yield val
+                if trace > 0:
+                    print(f"Found pair: {elt - 1}, {elt}")
+                yield elt
             found = True
         else:
             found = False
-        val += 2 * elt + 1
     print(f"Final count = {cnt}")
