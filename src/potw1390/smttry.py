@@ -59,17 +59,20 @@ def feasible_ints(base: int, maxdigs: int, sumdigs: int) -> Iterable[FNode]:
     yield GE(digits[-1], Int(1)) # Can't start with a 0
     sum_mult = Symbol('sum_mult', INT)
     yield GE(sum_mult, Int(0))
-    yield Equals(Plus(*digits), Time(Int(sumdigs), sum_mult))
+    yield Equals(Plus(*digits), Times(Int(sumdigs), sum_mult))
     for modulus in mymoduli:
-        digit_mults = (Times(Int((base ** _) % modulus), digits[_]) for _ in range(maxdigs + 1))
+        digit_mults = (Times(Int((base ** _) % modulus), digits[_])
+            for _ in range(maxdigs + 1))
         reduced_sum = Plus(*digit_mults)
         mod_var = Symbol('s_%d' % modulus, INT)
-        quo_var = Symbol('q_%d' % moduls, INT)
+        quo_var = Symbol('q_%d' % modulus, INT)
         yield GE(mod_var, Int(0))
         yield GE(Int(modulus - 1), mod_var)
         yield Equals(reduced_sum, Plus(mod_var, Times(Int(modulus), quo_var)))
         # Find all of the squares
         mod_squares = {(_ **2) % modulus for _ in range(modulus)}
+        non_squares = set(range(modulus)).difference(mod_squares)
+        yield from (NotEquals(mod_var, Int(_)) for _ in non_squares)
         yield Or(*(Equals(mod_var, Int(_)) for _ in mod_squares))
 
 def primary_filter(base: int, maxdigs: int, sumdigs: int) -> Iterable[int]:
